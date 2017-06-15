@@ -1,6 +1,6 @@
 <?php
 
-namespace Rapture\Template;
+namespace Rapture\Helper;
 
 /**
  * Template assets manager
@@ -119,7 +119,14 @@ class Assets
      */
     public function add(array $assets)
     {
-        $this->assets = $assets + $this->assets;
+        foreach ((array)$assets as $group => $asset) {
+            if (is_array($asset)) {
+                $this->add($asset);
+                continue;
+            }
+
+            $this->assets[] = $asset;
+        }
 
         return $this;
     }

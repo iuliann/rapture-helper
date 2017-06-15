@@ -54,6 +54,28 @@ class Time extends \DateTime
     const NOVEMBER  = 11;
     const DECEMBER  = 12;
 
+    const SECONDS_IN_MINUTE = 60;
+    const SECONDS_IN_HOUR   = 3600;
+    const SECONDS_IN_DAY    = self::SECONDS_IN_HOUR * self::HOURS_IN_DAY;
+    const SECONDS_IN_WEEK   = self::SECONDS_IN_DAY * self::DAYS_IN_WEEK;
+    const SECONDS_IN_MONTH  = self::SECONDS_IN_DAY * self::DAYS_IN_MONTH;
+    const SECONDS_IN_YEAR   = self::SECONDS_IN_DAY * self::DAYS_IN_YEAR;
+    const MINUTES_IN_HOUR   = 60;
+    const MINUTES_IN_DAY    = self::MINUTES_IN_HOUR * self::HOURS_IN_DAY;
+    const MINUTES_IN_WEEK   = self::MINUTES_IN_DAY * self::DAYS_IN_WEEK;
+    const MINUTES_IN_MONTH  = self::MINUTES_IN_DAY * self::DAYS_IN_MONTH;
+    const MINUTES_IN_YEAR   = self::MINUTES_IN_DAY * self::DAYS_IN_YEAR;
+    const HOURS_IN_DAY      = 24;
+    const HOURS_IN_WEEK     = self::HOURS_IN_DAY * self::DAYS_IN_WEEK;
+    const HOURS_IN_MONTH    = self::HOURS_IN_DAY * self::DAYS_IN_MONTH;
+    const HOURS_IN_YEAR     = self::HOURS_IN_DAY * self::DAYS_IN_YEAR;
+    const DAYS_IN_WEEK      = 7;
+    const DAYS_IN_MONTH     = 30;
+    const DAYS_IN_YEAR      = 365;
+    const WEEKS_IN_MONTH    = 4;
+    const WEEKS_IN_YEAR     = 52;
+    const MONTHS_IN_YEAR    = 12;
+
     const UTC = 'UTC';
 
     protected $days = [
@@ -924,12 +946,14 @@ class Time extends \DateTime
     /**
      * @param mixed  $time         Time value
      * @param mixed  $tz           Timezone value
-     * @param int    $secondsLimit Calculate only before this limit
+     * @param int    $limitSeconds Calculate only before this limit
      * @param string $limitText    Text to show if limit is exceeded
+     * @param int    $limitUnits   Limit units count
+     * @param bool   $template     Use template or just text
      *
      * @return string
      */
-    public function getHumanDuration($time, $tz = null, $secondsLimit = 0, $limitText = '')
+    public function getHumanDuration($time, $tz = null, $limitSeconds = 0, $limitText = '', $limitUnits = 0, $template = true)
     {
         $locale   = self::getLocale();
         $interval = $this->diff(self::go($time, self::safeTimezone($tz)));
@@ -947,11 +971,15 @@ class Time extends \DateTime
             ]
         );
 
-        if ($secondsLimit) {
+        if ($limitSeconds) {
             $durationInSeconds = $this->getUnitDuration($time, self::SECOND, $tz);
-            if ($durationInSeconds > $secondsLimit) {
+            if ($durationInSeconds > $limitSeconds) {
                 return sprintf($locale['more'], sprintf($interval->invert ? $locale['ago'] : $locale['from_now'], $limitText));
             }
+        }
+
+        if ($limitUnits) {
+            $units = array_slice($units, 0, $limitUnits);
         }
 
         foreach ($units as $unit => $count) {
@@ -964,6 +992,10 @@ class Time extends \DateTime
         $text = count($units)
             ? implode($locale['separator'], $units) . "{$locale['separator']}{$locale['&']}{$locale['separator']}{$last}"
             : $last;
+
+        if ($template === false) {
+            return $text;
+        }
 
         return $interval->invert
             ? sprintf($locale[$isNow ? 'ago' : 'before'], $text)
@@ -1046,5 +1078,25 @@ class Time extends \DateTime
             self::NOVEMBER  =>  strftime('%B', (new \DateTime('2000-11-01'))->getTimestamp()),
             self::DECEMBER  =>  strftime('%B', (new \DateTime('2000-12-01'))->getTimestamp()),
         ];
+    }
+
+    /**
+     * Returns array [timezone => timezone]
+     *
+     * @return array
+     */
+    public static function zones()
+    {
+        $timezones = [];
+
+        foreach (\DateTimeZone::listAbbreviations() as $t => $zones) {
+            foreach ($zones as $zone) {
+                $timezones[$zone['timezone_id']] = $zone['timezone_id'];
+            }
+        }
+
+        ksort($timezones);
+
+        return $timezones;
     }
 }

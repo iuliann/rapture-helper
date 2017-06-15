@@ -4,6 +4,7 @@ namespace Rapture\Helper;
 
 use Rapture\Form\Element;
 use Rapture\Form\Select;
+use Rapture\Validator\Group;
 
 /**
  * Html Helper
@@ -24,16 +25,26 @@ class Html
      */
     public static function iterate($name, array $through = [])
     {
-        if ($through) {
+        if (!isset(self::$iterate[$name])) {
             self::$iterate[$name] = $through;
-
-            return null;
         }
 
         $result = array_shift(self::$iterate[$name]);
         array_push(self::$iterate[$name], $result);
 
         return $result;
+    }
+
+    /**
+     * @param string $string String to repeat
+     * @param int    $times  How many times to repeat
+     * @param string $glue   String glue
+     *
+     * @return string
+     */
+    public static function repeat($string, int $times, $glue = '')
+    {
+        return implode($glue, array_fill(0, $times, $string));
     }
 
     /*
@@ -120,6 +131,10 @@ class Html
             $options = $options();
         }
 
+        if (is_string($options)) {
+            return $options;
+        }
+
         foreach ($options as $value => $name) {
             // optgroup
             if (is_array($name)) {
@@ -150,7 +165,7 @@ class Html
     {
         $help = $element->getMeta()['help'] ?? '';
 
-        return $help ? "<span class=\"{$class}\">{$help}</span>" : '';
+        return "<span class=\"{$class}\">{$help}</span>";
     }
 
     /**
@@ -169,6 +184,10 @@ class Html
             : $meta['html'];
 
         if (isset($meta['template'])) {
+            if (is_callable($meta['template'])) {
+                return $meta['template']($element);
+            }
+
             return sprintf(
                 $meta['template'],
                 self::tag($element->getTag(), $element->getAttributes(), $html)
@@ -176,5 +195,38 @@ class Html
         }
 
         return $meta['before'] . self::tag($element->getTag(), $element->getAttributes(), $html) . $meta['after'];
+    }
+
+    /**
+     * @param string  $template  Template as string
+     * @param Element $element   HTML element
+     * @param Group   $validator Validator
+     *
+     * @return string
+     */
+    public static function template($template, Element $element, Group $validator = null)
+    {
+        if ($validator) {
+            $errors = current($validator->getErrorsFor($element->getAttribute('name')));
+            $error  = $errors ? current($errors) : '';
+        }
+        else {
+            $error = '';
+        }
+
+        return str_replace(
+            [
+                '@class', '@label', '@element', '@help', '@error', '@name'
+            ],
+            [
+                $error ? 'has-error' : '',
+                self::label($element),
+                self::element($element),
+                self::help($element),
+                $error ? "<span class=\"error\">{$error}</span>" : '',
+                $element->getAttribute('name')
+            ],
+            $template
+        );
     }
 }

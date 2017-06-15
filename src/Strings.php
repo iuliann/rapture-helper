@@ -12,6 +12,19 @@ namespace Rapture\Helper;
 class Strings extends \DateTime
 {
     /**
+     * @param int    $length String length
+     * @param string $extra  Extra chars besides a-zA-Z0-9
+     *
+     * @return string
+     */
+    public static function random($length = 8, $extra = '')
+    {
+        $list = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' . $extra;
+
+        return substr(str_shuffle($list), 0, $length);
+    }
+
+    /**
      * @param string $string String to process
      *
      * @return string

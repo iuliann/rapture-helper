@@ -52,6 +52,29 @@ class Arrays
     }
 
     /**
+     * Example:
+     *  ['John' => 'Doe'] => [[first_name => 'John', 'last_name' => 'Doe']]
+     *
+     * @param array  $data      Original data
+     * @param string $keyName   Key name for key
+     * @param string $valueName Key name for value
+     *
+     * @return array
+     */
+    public static function toValueKey($data, $keyName = 'key', $valueName = 'value')
+    {
+        $result = [];
+        foreach ($data as $keyValue => $valueValue) {
+            $result[] = [
+                $keyName    =>  $keyValue,
+                $valueName  =>  $valueValue
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
      * @param array  $data         Collection array|iterator
      * @param string $key          Key name
      * @param string $value        Value key name

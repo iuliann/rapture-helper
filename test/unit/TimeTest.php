@@ -259,6 +259,11 @@ class TimeTest extends \PHPUnit_Framework_TestCase
             'more than 1 day from now',
             $now->getHumanDuration($now->goNext('P2D'), null, 24 * 3600, '1 day')
         );
+
+        $this->assertEquals(
+            'one year and one month after',
+            Time::go('2017-07-01')->getHumanDuration('2018-08-02', null, null, null, 2)
+        );
     }
 
     public function testHumanRo()
@@ -305,6 +310,10 @@ class TimeTest extends \PHPUnit_Framework_TestCase
 
         Time::setLocale($en);
     }
+
+    # LIMIT
+
+
 
     # EXCEPTIONS
 
