@@ -94,4 +94,35 @@ class Arrays
 
         return $result;
     }
+
+    /**
+     * Convert source array values to scalar
+     *
+     * @param array $data Source array
+     *
+     * @return array
+     */
+    public static function toScalarValues(array $data):array
+    {
+        foreach ($data as $key => $value) {
+            switch (gettype($value)) {
+                case 'array':
+                    $data[$key] = json_encode($value);
+                    break;
+                case 'object':
+                    if ($value instanceof \DateTime) {
+                        $data[$key] = $value->format('Y-m-d H:i:s');
+                    }
+                    else {
+                        $data[$key] = json_encode($value);
+                    }
+                    break;
+                case 'resource':
+                    $data[$key] = 'resource';
+                    break;
+            }
+        }
+
+        return $data;
+    }
 }
