@@ -19,7 +19,7 @@ Rapture Helper has multiple classes for helping with common tasks like:
 ## Install
 
 ```
-composer require iuliann/rapture-helper
+composer require mrjulio/rapture-helper
 ```
 
 ## Quick start
